@@ -62,7 +62,7 @@
 			 * @description	动态加载JS文件
 			 * @parameter {string} url 请求地址
 			 * @parameter {function} [callback] 回调函数
-			 * @return {object} this
+			 * @return {object} script 动态添加的script标签
 			 */
 			var script = doc.createElement("script");
 			script.src = url;
@@ -91,7 +91,7 @@
 				}
 			}
 			
-			return this;
+			return script;
 		},
 		shallowCopy : function(obj) {
 			/*
@@ -156,8 +156,8 @@
 			 * @property {string} [method] 请求方式，默认【get】
 			 * @property {object} [data] 发送的数据，默认【{}】
 			 * @property {boolean} [async] 是否异步，默认【false】
-			 * @property {function} [success] 请求数据成功的回调函数，默认【function(data){}】，【data】表示请求到的数据
-			 * @property {function} [error] 请求数据失败的回调函数，默认【function(status){}】，【status】表示XHR的状态码
+			 * @property {function} [success] 请求数据成功的回调函数，存在参数【data】。默认【function(data){}】，【data】表示请求到的数据
+			 * @property {function} [error] 请求数据失败的回调函数，存在参数【status】。默认【function(status){}】，【status】表示XHR的状态码
 			 * @return {undefined}
 			 */
 			
@@ -211,6 +211,55 @@
 			xhr.open(method, url, async);
 			xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 			xhr.send(data);
+		},
+		jsonp : function(parameters) {
+			/*
+			 * @description	用jsonp进行跨域请求数据。
+			 * @parameter {object} parameters 数据对象，属性如下：
+			 * @property {string} url 请求地址
+			 * @property {object} [data] 发送的数据，默认【{}】
+			 * @property {function} callback 回调函数，存在参数【data】，表示请求到的数据
+			 * @return {object} this
+			 */
+			var url = parameters.url,
+				data = parameters.data || {},
+				callback = parameters.callback,
+				formData = function(data) {
+					var newData = "";
+					for (var prop in data) {
+						newData += encodeURIComponent(prop);
+						newData += "=";
+						newData += encodeURIComponent(data[prop]);
+						newData += "&";
+					}
+					return newData.substring(0, newData.length - 1);
+				};
+				
+			if (typeof url !== "string") {
+				throw new Error("url must be a string");
+			}
+			if (typeof data !== "object") {
+				throw new Error("data must be a object");
+			}
+			if (typeof callback !== "function") {
+				throw new Error("callback must be a function");
+			}
+			
+			window.jsonpCallback = callback;
+			data.callback = "jsonpCallback";
+			
+			if (url.indexOf("?") === -1) {
+				url += "?";
+			} else if (url.indexOf("&") !== url.length - 1) {
+				url += "&";
+			}
+			url += formData(data);
+			data = null;
+			
+			var script = this.addScript(url);
+			doc.body.removeChild(script);
+			
+			return this;
 		},
 		getStrLen : function(str) {
 			/*
