@@ -393,6 +393,46 @@
 			}
 			
 			return value;
+		},
+		/**
+		 * @description 排序
+		 * @param array 被排序的数组
+		 */
+		sort : (arry) => {
+			// for (let i = 0, len = arry.length; i < len; i++) {  //冒泡
+			//     for (let j = 0; j < len - i - 1; j++) {
+			//         if (arry[j] < arry[j+1]) {
+			//             [arry[j], arr[j+1]] = [arry[j+1], arr[j]];
+			//         }
+					
+			//     }
+				
+			// }
+			// arry.sort((a, b) => a - b);
+
+			// for (let i = 0, len = arry.length; i < len - 1; i++) {  //选择
+			//     for (let j = i + 1; j < len; j++) {
+			//         if (arry[i] < arry[j]) {
+			//             [arry[i], arr[j]] = [arry[j], arr[i]];
+			//         }
+					
+			//     }
+				
+			// }
+
+			for (let i = 1, len = arry.length; i < len; i++) {  //插入排序
+				let curtVal = arry[i];
+				for (let j = i - 1; j >= 0; j--) {
+					if (curtVal > arry[j]) {
+						arry[j + 1] = curtVal;
+						break;
+					} else {
+						arry[j+1] = arry[j];
+					}
+				}
+			}
+
+			return arry;
 		}
 	};
 	
@@ -400,3 +440,19 @@
 	typeof define === "function" ? define({pVF : pVF}) : window.pVF = pVF;
 	
 })(window, document);
+
+/**
+ * @description bind 方法实现
+ */
+Function.prototype.Bind = function() {
+	if (typeof this !== "function") {
+		throw new Error("'this' must be a function");
+	}
+	var self = this,
+		args = Array.prototype.slice.apply(arguments),
+		obj = args.shift();
+
+	return function() {
+		self.apply(obj, args.concat(Array.prototype.slice.call(arguments)));
+	};
+};
